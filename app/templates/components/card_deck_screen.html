@@ -1,0 +1,64 @@
+<div id="game-container" class="flex flex-col min-h-full">
+    <!-- Header -->
+    <header class="flex items-center justify-between p-3 glass rounded-b-2xl border-b border-glass animate-fade-in-up">
+        <button
+            type="button"
+            hx-post="/reset"
+            hx-target="#game-container"
+            hx-swap="outerHTML"
+            aria-label="Go back to the mode selection screen"
+            class="text-light text-sm px-3 py-1.5 rounded chrome-btn active:shadow-glass transition-all duration-300">
+            ← Back
+        </button>
+        <h1 class="font-bold text-light">Card Deck Shuffle</h1>
+        <div class="w-16"></div>
+    </header>
+
+    <p class="text-center text-accent text-sm py-2 px-4 animate-fade-in-up animate-stagger-1">
+        Tap the deck to reveal a random question card and keep drawing until the deck is done.
+    </p>
+
+    <div class="mx-4 mb-4 animate-fade-in-up animate-stagger-2" role="region" aria-live="polite" aria-atomic="true">
+        <div class="flex items-center justify-between text-light text-sm opacity-90 mb-2">
+            <span id="cards-remaining-label">Remaining cards:</span>
+            <span>{{ session.remaining_cards }}</span>
+        </div>
+        <div
+            class="bg-glass rounded-full h-3 overflow-hidden"
+            style="background: rgba(255, 255, 255, 0.12);"
+            role="progressbar"
+            aria-labelledby="cards-remaining-label"
+            aria-valuemin="0"
+            aria-valuemax="24"
+            aria-valuenow="{{ session.remaining_cards }}"
+            aria-valuetext="{{ session.remaining_cards }} cards remaining">
+            <div class="rounded-full h-3 bg-accent" style="width: {{ session.remaining_cards / 24 * 100 }}%;"></div>
+        </div>
+    </div>
+
+    <div class="flex-1 p-3">
+        <div class="glass rounded-3xl p-6 border-glass shadow-glass max-w-2xl mx-auto text-center">
+            <div role="status" aria-live="polite" aria-atomic="true" class="card-scene mb-6">
+                <div class="card-flip {{ 'flipped' if session.current_card else '' }}">
+                    <div class="card-face card-front glass-panel glass rounded-3xl p-6 border-glass text-left text-light">
+                        <span class="text-xs uppercase tracking-wide text-accent opacity-80">Deck ready</span>
+                        <p class="mt-4 text-xl leading-relaxed">Tap the deck to draw your first question.</p>
+                    </div>
+                    <div class="card-face card-back glass-panel glass rounded-3xl p-6 border-glass text-left text-light">
+                        <span class="text-xs uppercase tracking-wide text-accent opacity-80">Current card</span>
+                        <p class="mt-4 text-xl leading-relaxed">{{ session.current_card }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                hx-post="/draw-card"
+                hx-target="#game-container"
+                hx-swap="outerHTML"
+                class="w-full chrome-btn text-dark font-semibold py-4 px-8 rounded-2xl text-lg transition-all duration-300 hover:shadow-glass">
+                Draw card
+            </button>
+        </div>
+    </div>
+</div>

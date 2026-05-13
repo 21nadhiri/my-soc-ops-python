@@ -68,3 +68,57 @@ class TestDismissModal:
         response = client.post("/dismiss-modal")
         assert response.status_code == 200
         assert "FREE SPACE" in response.text
+
+
+class TestScavengerHunt:
+    def test_start_scavenger_hunt_returns_list_screen(self, client: TestClient):
+        client.get("/")
+        response = client.post("/start?mode=scavenger")
+        assert response.status_code == 200
+        assert "Scavenger Hunt" in response.text
+        assert "Progress" in response.text
+        assert response.text.count('hx-post="/toggle/') == 24
+        assert "FREE SPACE" not in response.text
+
+    def test_scavenger_hunt_progress_updates_when_item_checked(
+        self,
+        client: TestClient,
+    ):
+        client.get("/")
+        client.post("/start?mode=scavenger")
+        response = client.post("/toggle/0")
+        assert response.status_code == 200
+        assert "1/24" in response.text
+
+    def test_scavenger_hunt_does_not_trigger_bingo(self, client: TestClient):
+        client.get("/")
+        client.post("/start?mode=scavenger")
+        client.post("/toggle/0")
+        client.post("/toggle/1")
+        client.post("/toggle/2")
+        client.post("/toggle/3")
+        response = client.post("/toggle/4")
+        assert response.status_code == 200
+        assert "🎉 BINGO!" not in response.text
+
+
+class TestCardDeckShuffle:
+    def test_start_card_deck_returns_card_screen(self, client: TestClient):
+        client.get("/")
+        response = client.post("/start?mode=card_deck")
+        assert response.status_code == 200
+        assert "Card Deck Shuffle" in response.text
+        assert "Draw card" in response.text
+        assert "Remaining cards:" in response.text
+        assert "24" in response.text
+        assert "FREE SPACE" not in response.text
+
+    def test_draw_card_reveals_question_and_decrements_deck(self, client: TestClient):
+        client.get("/")
+        client.post("/start?mode=card_deck")
+        response = client.post("/draw-card")
+        assert response.status_code == 200
+        assert "Remaining cards:" in response.text
+        assert "23" in response.text
+        assert "Draw card" in response.text
+        assert "FREE SPACE" not in response.text

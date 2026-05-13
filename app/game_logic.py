@@ -19,6 +19,11 @@ def generate_board() -> list[BingoSquareData]:
     ]
 
 
+def generate_card_deck() -> list[str]:
+    """Generate a shuffled card deck from the same question pool."""
+    return random.sample(QUESTIONS, len(QUESTIONS))
+
+
 def toggle_square(
     board: list[BingoSquareData], square_id: int
 ) -> list[BingoSquareData]:

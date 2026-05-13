@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.game_service import GameSession, get_session
-from app.models import GameState
+from app.models import GameMode, GameState
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -36,22 +36,40 @@ async def home(request: Request) -> Response:
     )
 
 
+def _render_game_screen(request: Request, session: GameSession) -> Response:
+    if session.mode == GameMode.BINGO:
+        template = "components/game_screen.html"
+    elif session.mode == GameMode.SCAVENGER:
+        template = "components/scavenger_hunt_screen.html"
+    else:
+        template = "components/card_deck_screen.html"
+    return templates.TemplateResponse(request, template, {"session": session})
+
+
 @app.post("/start", response_class=HTMLResponse)
 async def start_game(request: Request) -> Response:
     session = _get_game_session(request)
-    session.start_game()
-    return templates.TemplateResponse(
-        request, "components/game_screen.html", {"session": session}
-    )
+    mode_value = request.query_params.get("mode", GameMode.BINGO.value)
+    try:
+        mode = GameMode(mode_value)
+    except ValueError:
+        mode = GameMode.BINGO
+    session.start_game(mode)
+    return _render_game_screen(request, session)
 
 
 @app.post("/toggle/{square_id}", response_class=HTMLResponse)
 async def toggle_square(request: Request, square_id: int) -> Response:
     session = _get_game_session(request)
     session.handle_square_click(square_id)
-    return templates.TemplateResponse(
-        request, "components/game_screen.html", {"session": session}
-    )
+    return _render_game_screen(request, session)
+
+
+@app.post("/draw-card", response_class=HTMLResponse)
+async def draw_card(request: Request) -> Response:
+    session = _get_game_session(request)
+    session.draw_card()
+    return _render_game_screen(request, session)
 
 
 @app.post("/reset", response_class=HTMLResponse)

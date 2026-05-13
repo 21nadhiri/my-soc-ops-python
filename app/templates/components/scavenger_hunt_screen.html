@@ -1,0 +1,65 @@
+<div id="game-container" class="flex flex-col min-h-full">
+    <!-- Header -->
+    <header class="flex items-center justify-between p-3 glass rounded-b-2xl border-b border-glass animate-fade-in-up">
+        <button
+            type="button"
+            hx-post="/reset"
+            hx-target="#game-container"
+            hx-swap="outerHTML"
+            aria-label="Go back to the mode selection screen"
+            class="text-light text-sm px-3 py-1.5 rounded chrome-btn active:shadow-glass transition-all duration-300">
+            ← Back
+        </button>
+        <h1 class="font-bold text-light">Scavenger Hunt</h1>
+        <div class="w-16"></div>
+    </header>
+
+    <p class="text-center text-accent text-sm py-2 px-4 animate-fade-in-up animate-stagger-1">
+        Check off the items as you find them, then complete the list.
+    </p>
+
+    <div class="mx-4 mb-4 animate-fade-in-up animate-stagger-2" role="region" aria-live="polite" aria-atomic="true">
+        <div class="flex items-center justify-between text-light text-sm opacity-90 mb-2">
+            <span id="scavenger-progress-label">Progress</span>
+            <span>{{ session.checked_items }}/{{ session.total_items }}</span>
+        </div>
+        <div
+            class="bg-glass rounded-full h-3 overflow-hidden"
+            style="background: rgba(255, 255, 255, 0.12);"
+            role="progressbar"
+            aria-labelledby="scavenger-progress-label"
+            aria-valuemin="0"
+            aria-valuemax="{{ session.total_items }}"
+            aria-valuenow="{{ session.checked_items }}"
+            aria-valuetext="{{ session.checked_items }} of {{ session.total_items }} items completed">
+            <div class="rounded-full h-3 bg-accent" style="width: {{ session.progress_percent }}%;"></div>
+        </div>
+    </div>
+
+    <div class="flex-1 p-3">
+        <div class="glass rounded-3xl p-4 border-glass shadow-glass max-w-2xl mx-auto">
+            <ul class="space-y-3">
+                {% for square in session.board %}
+                    {% if not square.is_free_space %}
+                    <li>
+                        <button
+                            type="button"
+                            hx-post="/toggle/{{ square.id }}"
+                            hx-target="#game-container"
+                            hx-swap="outerHTML"
+                            aria-pressed="{{ 'true' if square.is_marked else 'false' }}"
+                            aria-label="{{ 'Unmark' if square.is_marked else 'Mark' }} {{ square.text }} as found"
+                            class="w-full flex items-center gap-4 px-4 py-4 rounded-2xl border border-glass transition-all duration-300 text-left"
+                            style="background: rgba(255, 255, 255, 0.08);">
+                            <span class="flex-none grid place-items-center h-10 w-10 rounded-full border border-glass {{ 'bg-accent text-dark' if square.is_marked else 'text-light' }}" aria-hidden="true">
+                                {% if square.is_marked %}✓{% endif %}
+                            </span>
+                            <span class="text-light">{{ square.text }}</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
